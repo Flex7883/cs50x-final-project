@@ -11,10 +11,3 @@
     max-height: 800px;
     background-color: transparent;
 }
-
-.image-preview-thumbnail {
-    display: block;
-    position: relative;
-    text-align: center;
-    margin: 0.5em auto;
-}

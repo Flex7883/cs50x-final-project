@@ -11,7 +11,7 @@
         },
         {
             "matches": ["https://www.ptt.cc/*"],
-            "js": ["imgur.js", "ptt.js"],
+            "js": ["imgur.js", "site.js"],
             "css": ["style.css"]
         }
     ]
