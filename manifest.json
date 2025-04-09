@@ -1,0 +1,18 @@
+{
+    "manifest_version": 3,
+    "name": "Image Link Previewer",
+    "version": "0.1",
+    "description": "Shows a preview of an image when hovering over a direct image link.",
+    "content_scripts": [
+        {
+            "matches": ["https://term.ptt.cc/"],
+            "js": ["imgur.js", "term.js"],
+            "css": ["style.css"]
+        },
+        {
+            "matches": ["https://www.ptt.cc/*"],
+            "js": ["imgur.js", "ptt.js"],
+            "css": ["style.css"]
+        }
+    ]
+}
