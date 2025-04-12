@@ -24,6 +24,7 @@ function isImgurUrl(Url) {
 }
 
 // Resolve all kinds of imgur links to match term.ptt's imgur links format
+// to create image cache for term.ptt to use.
 // This is needed because people on PTT are posting imgur links in different formats
 function resolveImgurUrl(Url) {
 

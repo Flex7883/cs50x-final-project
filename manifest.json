@@ -6,13 +6,11 @@
     "content_scripts": [
         {
             "matches": ["https://term.ptt.cc/"],
-            "js": ["imgur.js", "term.js"],
-            "css": ["style.css"]
+            "js": ["imgur.js", "term.js"]
         },
         {
             "matches": ["https://www.ptt.cc/*"],
-            "js": ["imgur.js", "site.js"],
-            "css": ["style.css"]
+            "js": ["imgur.js", "site.js"]
         }
     ]
 }

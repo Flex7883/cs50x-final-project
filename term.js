@@ -1,5 +1,7 @@
+const mainContainer = document.getElementById('mainContainer');
 const padding = 20;
-let previewElement = null;
+let img = null;
+let latestMouseEvent = null;
 
 function handleMouseOver(event) {
     let hoveredUrl = this.href;
@@ -7,96 +9,113 @@ function handleMouseOver(event) {
     // Resolve imgur links to match 
     hoveredUrl = resolveImgurUrl(hoveredUrl);
 
+    latestMouseEvent = event;
+
     if (isImageUrl(hoveredUrl)) {
 
-        // Prevent creating multiple preview elements
-        if (previewElement) {
-            return;
-        }
+        img = document.createElement('img');
+        img.style.visibility = 'hidden';
 
-        // Create container for image
-        previewElement = document.createElement('div');
-        previewElement.id = 'image-preview-container';
-
-        // Create img
-        const img = document.createElement('img');
-
-        // set initial position
-        let mouseX = event.clientX;
-        let mouseY = event.clientY;
-        previewElement.style.left = `${mouseX + padding}px`;
-        previewElement.style.top = `${mouseY + padding}px`;
-
-        // Check if the image would overflow the viewport
+        // Adjust image vertical position within viewpoert after loaded
         img.onload = function() {        
             
-            // If mouseOut before image loading completed
-            if (previewElement === null) {
+            // Skip image positioning if mouseOut before loaded
+            if (img === null) {
                 return;
             }
+            
+            // set initial position
+            let mouseX = latestMouseEvent.clientX;
+            let mouseY = latestMouseEvent.clientY;
+            const initialX = mouseX + padding;
+            const initialY = mouseY - img.offsetHeight / 2 + padding;
+            let adjustedY = 0;
 
-            // Set image position within viewport
-            if (mouseY + previewElement.offsetHeight + padding > window.innerHeight - padding) {
-                mouseY = window.innerHeight - previewElement.offsetHeight - padding * 2;
+            // Ensure the image preview stays vertically within the viewport.
+            // Avoid constraining horizontally, as moving the cursor over the 
+            // preview would incorrectly trigger its removal.
+
+            if (initialY < padding) {
+                adjustedY = padding;
+            } else if (initialY + img.offsetHeight > window.innerHeight - padding) {
+                adjustedY = window.innerHeight - img.offsetHeight - padding;
+            } else {
+                adjustedY = initialY;
             }
+            
+            img.style.left = `${initialX}px`;
+            img.style.top = `${adjustedY}px`;
 
-            previewElement.style.top = `${mouseY + padding}px`;
+            img.style.visibility = 'visible';
         };
 
-        // Remove previewElement/listener if image failed to load
+        // Handle image loading errors
         img.onerror = function(errorEvent) {
             console.error('Failed to load image: ', img.src, 'Event: ', errorEvent);
             handleMouseOut.call(event.target);
-        }
+        };
 
-        // Append img to container
-        previewElement.appendChild(img);
-
-        // Set image link source
+        // Set image source and styles
         img.src = hoveredUrl;
+        img.style.display = 'block';
+        img.style.position = 'absolute';
+        img.style.maxHeight = '80%';
+        img.style.maxWidth = '90%';
+        img.style.zIndex = '2';
 
-        // Set img referrer policy to non if imgur link
+        // Set no-referrer policy for imgur links
         if (isImgurUrl(hoveredUrl)) {
             img.referrerPolicy = 'no-referrer';
-            return;
-        }        
+        }
 
-        // Append whole container
-        document.body.appendChild(previewElement);
+        // Append image to mainContainer
+        mainContainer.appendChild(img);
 
-        // Add mouse movement listener
-        this.addEventListener('mousemove', handleMouseMove);        
+        // Add mousemove event listener to dynamically position the image
+        this.addEventListener('mousemove', handleMouseMove);
     }
 }
 
-// Remove image after mouse moving out of link
+// Remove image after mouse moving out of the link
 function handleMouseOut(event) {
     this.removeEventListener('mousemove', handleMouseMove);
-    if (previewElement) {
-        previewElement.remove();
-        previewElement = null;
+    if (img) {
+        img.remove();
+        img = null;
     }
-  
+    latestMouseEvent = null;
 }
 
 // Dynamiclly position image alongside the cursor
 function handleMouseMove(event) {
+    latestMouseEvent = event;
 
-    // Pass function if image isn't loaded
-    if (!previewElement) {
+    // Check if img exists, if not, remove the event listener and exit
+    if (!img) {
         this.removeEventListener('mousemove', handleMouseMove);
+        latestMouseEvent = null;
         return;
     }
 
     let mouseX = event.clientX;
     let mouseY = event.clientY;
+    const initialX = mouseX + padding;
+    const initialY = mouseY - img.offsetHeight / 2 + padding;
+    let adjustedY = 0;
 
-    if (mouseY + previewElement.offsetHeight + padding > window.innerHeight - padding) {
-        mouseY = window.innerHeight - previewElement.offsetHeight - padding * 2;
+    // Ensure the image preview stays vertically within the viewport.
+    // Avoid constraining horizontally, as moving the cursor over the 
+    // preview would incorrectly trigger its removal.
+    if (initialY < padding) {
+        adjustedY = padding;
+    } else if (initialY + img.offsetHeight > window.innerHeight - padding) {
+        adjustedY = window.innerHeight - img.offsetHeight - padding;
+    } else {
+        adjustedY = initialY;
     }
-
-    previewElement.style.left = `${mouseX + padding}px`;
-    previewElement.style.top = `${mouseY + padding}px`;
+    
+    img.style.left = `${initialX}px`;
+    img.style.top = `${adjustedY}px`;
 }
 
 // Find all link elements on the page
@@ -135,10 +154,29 @@ const callback = (mutationList, observer) => {
                 // Target <span> is needed because when browsing PTT, PTT updates the view by removing and adding <span> elements
                 // so we treat <span> mutation as mouseOut event to remove image preview
                 if (node.matches('span')) {
-                    if (previewElement) {
-                        previewElement.remove();
-                        previewElement = null;
+                    if (img) {
+                        img.remove();
+                        img = null;
                     }
+                }
+            }
+
+            // Hide PTT genarates preview images
+            // Because it sometimes placed out of viewport
+            if (node.nodeName === 'IMG' &&
+                node.src &&
+                node.src.startsWith('https://i.imgur.com/') &&
+                node.style.position === 'absolute') {
+
+                // Skip if the node is our preview image
+                if (node === img) {
+                    continue;
+                }
+
+                // Hide the last added image preview (which is PTT's)
+                if (mainContainer && mainContainer.lastElementChild === node) {
+                    node.style.display = 'none';
+                    node.style.visibility = 'hidden';
                 }
             }
         }
