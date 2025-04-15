@@ -27,5 +27,12 @@
             "matches": ["*://www.ptt.cc/*"],
             "js": ["imgur.js", "site.js"]
         }
-    ]
+    ],
+
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "ptt-image-previewer@flex7883.github.io",
+            "strict_min_version": "109.0"
+        }
+    }
 }
