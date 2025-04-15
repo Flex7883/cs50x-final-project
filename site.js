@@ -21,7 +21,6 @@ links.forEach(link => {
         // Create image and set attributes
         const img = document.createElement('img');
         img.src = imageUrl;
-        img.loading = 'lazy';
         img.referrerPolicy = 'no-referrer';
 
         // Skipping preview if image failed to load

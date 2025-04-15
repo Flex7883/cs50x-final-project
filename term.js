@@ -35,7 +35,7 @@ function updateImagePosition(img, mouseEvent) {
 function handleMouseOver(event) {
     let hoveredUrl = this.href;
 
-    // Resolve imgur links to match 
+    // Resolve imgur links to unified format
     hoveredUrl = resolveImgurUrl(hoveredUrl);
 
     // Store initial event

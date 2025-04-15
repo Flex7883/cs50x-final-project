@@ -1,15 +1,30 @@
 {
     "manifest_version": 3,
-    "name": "Image Link Previewer",
-    "version": "0.1",
-    "description": "Shows a preview of an image when hovering over a direct image link.",
+    "name": "PTT image previewer",
+    "version": "1.0",
+    "description": "改善PTT的圖片預覽功能",
+    
+    "icons": {
+        "48": "icons/48.png",
+        "96": "icons/96.png",
+        "128": "icons/128.png"
+    },
+    
+    "permissions": [
+
+    ],
+    
+    "host_permissions": [
+        "*://*.ptt.cc/"
+    ],
+    
     "content_scripts": [
         {
-            "matches": ["https://term.ptt.cc/"],
+            "matches": ["*://term.ptt.cc/"],
             "js": ["imgur.js", "term.js"]
         },
         {
-            "matches": ["https://www.ptt.cc/*"],
+            "matches": ["*://www.ptt.cc/*"],
             "js": ["imgur.js", "site.js"]
         }
     ]
