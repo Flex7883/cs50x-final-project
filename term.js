@@ -1,7 +1,9 @@
-const mainContainer = document.getElementById('mainContainer');
 const padding = 20;
 let img = null;
 let latestMouseEvent = null;
+let mainContainer = null;
+let pageObserver = null;
+let startupObserver = null;
 
 function updateImagePosition(img, mouseEvent) {
     
@@ -43,6 +45,7 @@ function handleMouseOver(event) {
 
     if (isImageUrl(hoveredUrl)) {
 
+        // Hide image initially to prevent flickering when loading
         img = document.createElement('img');
         img.style.visibility = 'hidden';
 
@@ -114,24 +117,8 @@ function handleMouseMove(event) {
     updateImagePosition(img, event);
 }
 
-// Find all link elements on the page
-const links = document.querySelectorAll("a");
-
-// Loop through each link and add event listeners
-links.forEach(link => {
-    link.addEventListener('mouseover', handleMouseOver);
-    link.addEventListener('mouseout', handleMouseOut);
-});
-
-// Observe page mutation for re-attacthing mouseOver/Out (For term.ptt)
-// Select the node for observing mutations
-const targetNode = document.body
-
-// Options for the observer
-const config = { attributes: false, childList: true, subtree: true };
-
 // Set callback funtion attaching mouseOver/out for new addedNode
-const callback = (mutationList, observer) => {
+const pageChangeObserver = (mutationList, observer) => {
 
     // Iterate mutation list
     for (const mutation of mutationList) {
@@ -177,8 +164,50 @@ const callback = (mutationList, observer) => {
     }
 };
 
-// Create an oberserver instance linked to the callback function
-const observer = new MutationObserver(callback);
+// Select the node for observing mutations
+const targetNode = document.body;
 
-// Start observering
-observer.observe(targetNode, config);
+// Options for the observer
+const config = { childList: true, subtree: true };
+
+function setupListenersAndObserver() {
+
+    // Find all link elements on the page
+    const links = document.querySelectorAll("a");
+
+    // Loop through each link and add event listeners
+    links.forEach(link => {
+        link.addEventListener('mouseover', handleMouseOver);
+        link.addEventListener('mouseout', handleMouseOut);
+    });
+
+    // Observe page mutation for re-attacthing mouseOver/Out listener (For term.ptt)
+
+    // Create an oberserver instance linked to the callback function
+    pageObserver = new MutationObserver(pageChangeObserver);
+
+    // Start observering
+    pageObserver.observe(targetNode, config);
+}
+
+function setupMainContainer() {
+    if (mainContainer) {
+        startupObserver.disconnect();
+        startupObserver = null;
+        setupListenersAndObserver();
+        return;
+    }
+
+    startupObserver = new MutationObserver((mutationList, observer) => {
+        mainContainer = document.getElementById('mainContainer');
+        if (mainContainer) {
+            startupObserver.disconnect();
+            startupObserver = null;
+            setupListenersAndObserver();
+        }
+    });
+
+    startupObserver.observe(targetNode, config);
+}
+
+setupMainContainer();
