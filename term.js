@@ -77,11 +77,7 @@ function handleMouseOver(event) {
         img.style.maxHeight = '80%';
         img.style.maxWidth = '90%';
         img.style.zIndex = '2';
-
-        // Set no-referrer policy for imgur links
-        if (isImgurUrl(hoveredUrl)) {
-            img.referrerPolicy = 'no-referrer';
-        }
+        img.referrerPolicy = 'no-referrer';
 
         // Append image to mainContainer
         mainContainer.appendChild(img);

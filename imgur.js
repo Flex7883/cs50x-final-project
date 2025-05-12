@@ -26,22 +26,22 @@ function isImgurUrl(Url) {
 // Resolve all kinds of imgur links format
 function resolveImgurUrl(Url) {
 
-    // Replace http with https
-    if (Url.startsWith('http://i.imgur.com/')) {
-        Url = Url.replace('http://', 'https://');
-
     // Handles links format conversion for PTT's built-in image preview.
     // Note: PTT's built-in image preview is currently hidden due to positioning bug.
-    // Kept to prevent console errors and for potential furture use.
-    
-    // Replace imgur.com with i.imgur.com
-    } else if (Url.startsWith('https://imgur.com/')) {
-        Url = Url.replace('imgur.com/', 'i.imgur.com/');
-
-        // Add .jpg to the links without extension
-        if (!isImageUrl(Url)) {
-            Url += '.jpg';
+    // Kept to prevent console errors and for potential furture usage.
+    try {
+        const parsedUrl = new URL(Url);
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const pathname = parsedUrl.pathname;
+        if (hostname.includes('imgur.com')) {
+            Url = 'https://i.imgur.com' + pathname;
+            if (!isImageUrl(Url)) {
+                Url += '.jpg';
+            }
         }
+    } catch (e) {
+        return Url;
     }
+    console.log('imgurURL: ' + Url);
     return Url;
 }
